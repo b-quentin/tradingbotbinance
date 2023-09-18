@@ -1,12 +1,11 @@
 package klines
 
 import (
-	"context"
-	"fmt"
-	"time"
-
-	"github.com/adshao/go-binance/v2"
-	"github.com/b-quentin/indicator"
+    "context"
+    "fmt"
+    "time"
+    "github.com/adshao/go-binance/v2"
+    "github.com/b-quentin/indicator"
 )
 
 type Klines struct {
@@ -51,46 +50,51 @@ func (kls *Klines) ShowKlines() {
 }
 
 func (kls *Klines) SetKlinesOutlimit(client *binance.Client, symbol string, interval string,startTime time.Time, endTime time.Time) {
-	plage := 8 * time.Hour
-	var allKlines []*binance.Kline
-	// Récupérer les klines par plage de 8 heures
-	for startTime.Before(endTime) {
-		// Calculer la fin de la plage de 8 heuresmodify 
-		plageEndTime := startTime.Add(plage)
-
-		// Vérifier si la fin de la plage dépasse la date de fin
-		if plageEndTime.After(endTime) {
-			plageEndTime = endTime
-		}
-
-		klines, err := client.NewKlinesService().
-			Symbol(symbol).
-			Interval(interval).
-			StartTime(startTime.Unix() * 1000).
-			EndTime(plageEndTime.Unix() * 1000).
-			Limit(1000). // Utilisez une limite supérieure pour obtenir plus de klines si nécessaire
-			Do(context.Background())
-
-		if err != nil {
-			fmt.Println("Erreur lors de la récupération des klines :", err)
-			return
-		}
-
+    plage := 24 * time.Hour
+    var allKlines []*binance.Kline
+    // Récupérer les klines par plage de 8 heures
+    for startTime.Before(endTime) {
+        // Calculer la fin de la plage de 8 heuresmodify 
+        plageEndTime := startTime.Add(plage)
+        
+        // Vérifier si la fin de la plage dépasse la date de fin
+        if plageEndTime.After(endTime) {
+            plageEndTime = endTime
+        }
+        
+        klines, err := client.NewKlinesService().
+            Symbol(symbol).
+            Interval(interval).
+            StartTime(startTime.Unix() * 1000).
+            EndTime(plageEndTime.Unix() * 1000).
+            Limit(1000). // Utilisez une limite supérieure pour obtenir plus de klines si nécessaire
+            Do(context.Background())
+        
+        var newKlines []*binance.Kline
+        if len(klines) > 0 {
+            newKlines = klines[1:]
+        }
+        
+        if err != nil {
+        	fmt.Println("Erreur lors de la récupération des klines :", err)
+        	return
+        }
+        
         // Ajouter les klines de la plage actuelle à allKlines
-		allKlines = append(allKlines, klines...)
-
-		// Afficher les klines de la plage actuelle
-		//for _, kline := range klines {
-		//	fmt.Printf("OpenTime: %s, CloseTime: %s, Open: %s, Close: %s\n",
-		//		time.Unix(kline.OpenTime/1000, 0).UTC().Format(time.RFC3339),
-		//		time.Unix(kline.CloseTime/1000, 0).UTC().Format(time.RFC3339),modify 
-		//		kline.Open,
-		//		kline.Close)
-		//}
-
-		// Mettre à jour le début de la plage pour la prochaine itération
-		startTime = plageEndTime
-	}
+        allKlines = append(allKlines, newKlines...)
+        
+        // Afficher les klines de la plage actuelle
+        //for _, kline := range klines {
+        //	fmt.Printf("OpenTime: %s, CloseTime: %s, Open: %s, Close: %s\n",
+        //		time.Unix(kline.OpenTime/1000, 0).UTC().Format(time.RFC3339),
+        //		time.Unix(kline.CloseTime/1000, 0).UTC().Format(time.RFC3339),modify 
+        //		kline.Open,
+        //		kline.Close)
+        //}
+        
+        // Mettre à jour le début de la plage pour la prochaine itération
+        startTime = plageEndTime
+}
 
     for _, k := range allKlines {
         openTime := timespanToDate(k.OpenTime)
@@ -192,6 +196,12 @@ func (kls *Klines) SetADX(period int) {
         accessKline.Adx = adx[i]
         accessKline.Plus = plus[i]
         accessKline.Minus = minus[i]
+    }
+}
+
+func (kls *Klines) ShowKlinesMRC() {
+    for _, kline := range kls.Kline {
+        kline.ShowMRC()
     }
 }
 

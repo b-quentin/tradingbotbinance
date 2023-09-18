@@ -13,8 +13,8 @@ func (kls *Klines) SetIchimoku() {
         accessKline.ConversionBase = conversionBase[i]
         accessKline.BaseLigne = baseLigne[i]
         if i > 24 {
-            accessKline.LeadingSpanA = leadingSpanA[i]
-            accessKline.LeadingSpanB = leadingSpanB[i]
+            accessKline.LeadingSpanA = leadingSpanA[i-25]
+            accessKline.LeadingSpanB = leadingSpanB[i-25]
         }
         accessKline.LaggingSpan = laggingSpan[i]
     }
